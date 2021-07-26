@@ -8,8 +8,7 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.transforms import transforms
 from models import Rnn, AlexNet, LeNet, CNNLSTM
-from train import train_loop, test_loop, transform_label_2_num, \
-    sample_transform
+from train import train_loop, test_loop
 from dataset.CustomDataset import CustomDataset
 
 # 定义超参数
@@ -84,15 +83,11 @@ def LeNet_mnist_train():
 def cnnlstm_custom_train():
     train_custom_dataset = CustomDataset("data1\\train_sample_label.csv",
                                          "data1\\train_sample",
-                                         28 * 28 * 5, (5, 1, 28, 28),
-                                         sample_transform,
-                                         transform_label_2_num)
+                                         28 * 28 * 5, (5, 1, 28, 28))
 
     test_custom_dataset = CustomDataset("data1\\test_sample_label.csv",
                                         "data1\\test_sample",
-                                        28 * 28 * 5, (5, 1, 28, 28),
-                                        sample_transform,
-                                        transform_label_2_num)
+                                        28 * 28 * 5, (5, 1, 28, 28))
 
     train_custom_loader = DataLoader(train_custom_dataset,
                                      batch_size=batch_size,

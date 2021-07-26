@@ -128,4 +128,5 @@ dmypy.json
 data
 data1
 mnist
+*.pth
 
