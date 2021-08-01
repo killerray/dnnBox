@@ -125,8 +125,7 @@ class CNNLSTM(nn.Module):
     def forward(self, x_3d):
         cnn_output_list = list()
         for t in range(x_3d.size(1)):
-            with torch.no_grad():
-                cnn_output_list.append(self.cnn(x_3d[:, t, :, :, :]))
+            cnn_output_list.append(self.cnn(x_3d[:, t, :, :, :]))
         x = torch.stack(tuple(cnn_output_list), dim=1)
         out, hidden = self.lstm(x)
         x = out[:, -1, :]

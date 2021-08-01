@@ -36,12 +36,11 @@ def lstm_mnist_train():
 
     for t in range(num_epoches):
         print(f"Epoch {t + 1}\n-------------------------------")
-        train_loop(train_loader, model, loss_fn, optimizer, True)
-        test_loop(test_loader, model, loss_fn, True)
+        train_loop(train_loader, model, loss_fn, optimizer, 1)
+        test_loop(test_loader, model, loss_fn, 1)
         print("Done!")
     torch.save(model.state_dict(), "Lstm.pth")
     print("Saved PyTorch Model State to Lstm.pth")
-
 
 
 def alexnet_mnist_train():
@@ -54,12 +53,11 @@ def alexnet_mnist_train():
 
     for t in range(num_epoches):
         print(f"Epoch {t + 1}\n-------------------------------")
-        train_loop(train_loader, model, loss_fn, optimizer, False)
-        test_loop(test_loader, model, loss_fn, False)
+        train_loop(train_loader, model, loss_fn, optimizer, 0)
+        test_loop(test_loader, model, loss_fn, 0)
         print("Done!")
     torch.save(model.state_dict(), "AlexNet.pth")
     print("Saved PyTorch Model State to AlexNet.pth")
-
 
 
 def LeNet_mnist_train():
@@ -72,12 +70,29 @@ def LeNet_mnist_train():
 
     for t in range(num_epoches):
         print(f"Epoch {t + 1}\n-------------------------------")
-        train_loop(train_loader, model, loss_fn, optimizer, False)
-        test_loop(test_loader, model, loss_fn, False)
+        train_loop(train_loader, model, loss_fn, optimizer, 0)
+        test_loop(test_loader, model, loss_fn, 0)
         print("Done!")
         # Save Models
     torch.save(model.state_dict(), "LeNet.pth")
     print("Saved PyTorch Model State to LeNet.pth")
+
+
+def cnnlstm_mnist_train():
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model = CNNLSTM(num_classes=10).to(device)
+    loss_fn = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    # optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+
+    for t in range(num_epoches):
+        print(f"Epoch {t + 1}\n-------------------------------")
+        train_loop(train_loader, model, loss_fn, optimizer, 2)
+        test_loop(test_loader, model, loss_fn, 2)
+        print("Done!")
+        # Save Models
+    torch.save(model.state_dict(), "cnnlstm.pth")
+    print("Saved PyTorch Model State to cnnlstm.pth")
 
 
 def cnnlstm_custom_train():
@@ -104,8 +119,8 @@ def cnnlstm_custom_train():
 
     for t in range(num_epoches):
         print(f"Epoch {t + 1}\n-------------------------------")
-        train_loop(train_custom_loader, model, loss_fn, optimizer, False)
-        test_loop(test_custom_loader, model, loss_fn, False)
+        train_loop(train_custom_loader, model, loss_fn, optimizer, 2)
+        test_loop(test_custom_loader, model, loss_fn, 2)
         print("Done!")
     # Save Models
     torch.save(model.state_dict(), "cnn_lstm.pth")
@@ -116,4 +131,5 @@ if __name__ == "__main__":
     # lstm_mnist_train()
     # alexnet_mnist_train()
     # LeNet_mnist_train()
-    cnnlstm_custom_train()
+    # cnnlstm_custom_train()
+    cnnlstm_mnist_train()
