@@ -7,7 +7,7 @@ from torch import nn, optim
 from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.transforms import transforms
-from models import Rnn, AlexNet, LeNet, CNNLSTM
+from models import Rnn, AlexNet, LeNet, CNNLSTM, AttBiLSTM
 from train import train_loop, test_loop
 from dataset.CustomDataset import CustomDataset
 
@@ -25,6 +25,22 @@ test_dataset = datasets.MNIST(
 
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
+
+def AttBilstm_mnist_train():
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model = AttBiLSTM(10, 28, 128, 2, 0.5).to(device)
+    loss_fn = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    # optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+
+    for t in range(num_epoches):
+        print(f"Epoch {t + 1}\n-------------------------------")
+        train_loop(train_loader, model, loss_fn, optimizer, 1)
+        test_loop(test_loader, model, loss_fn, 1)
+        print("Done!")
+    torch.save(model.state_dict(), "AttBilstm.pth")
+    print("Saved PyTorch Model State to AttBilstm.pth")
 
 
 def lstm_mnist_train():
@@ -132,4 +148,5 @@ if __name__ == "__main__":
     # alexnet_mnist_train()
     # LeNet_mnist_train()
     # cnnlstm_custom_train()
-    cnnlstm_mnist_train()
+    # cnnlstm_mnist_train()
+    AttBilstm_mnist_train()

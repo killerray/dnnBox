@@ -30,6 +30,72 @@ class Rnn(nn.Module):
         return out
 
 
+class Attention(nn.Module):
+    def __init__(self, rnn_size: int):
+        super(Attention, self).__init__()
+        self.w = nn.Linear(rnn_size, 1)
+        self.tanh = nn.Tanh()
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, H):
+        # eq.9: M = tanh(H)
+        M = self.tanh(H)  # (batch_size, word_pad_len, rnn_size)
+
+        # eq.10: α = softmax(w^T M)
+        alpha = self.w(M).squeeze(2)  # (batch_size, word_pad_len)
+        alpha = self.softmax(alpha)  # (batch_size, word_pad_len)
+
+        # eq.11: r = H
+        r = H * alpha.unsqueeze(2)  # (batch_size, word_pad_len, rnn_size)
+        r = r.sum(dim=1)  # (batch_size, rnn_size)
+
+        return r, alpha
+
+
+class AttBiLSTM(nn.Module):
+    def __init__(
+            self,
+            n_classes: int,
+            emb_size: int,
+            rnn_size: int,
+            rnn_layers: int,
+            dropout: float
+    ):
+        super(AttBiLSTM, self).__init__()
+
+        self.rnn_size = rnn_size
+
+        # bidirectional LSTM
+        self.BiLSTM = nn.LSTM(
+            emb_size, rnn_size,
+            num_layers=rnn_layers,
+            bidirectional=True,
+            batch_first=True
+        )
+
+        self.attention = Attention(rnn_size)
+        self.fc = nn.Linear(rnn_size, n_classes)
+
+        self.tanh = nn.Tanh()
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, x):
+        rnn_out, _ = self.BiLSTM(x)
+
+        H = rnn_out[:, :, : self.rnn_size] + rnn_out[:, :, self.rnn_size:]
+
+        # attention module
+        r, alphas = self.attention(
+            H)  # (batch_size, rnn_size), (batch_size, word_pad_len)
+
+        # eq.12: h* = tanh(r)
+        h = self.tanh(r)  # (batch_size, rnn_size)
+
+        scores = self.fc(self.dropout(h))  # (batch_size, n_classes)
+
+        return scores
+
+
 # 定义AlexNet
 class AlexNet(nn.Module):
     def __init__(self, num_classes=10):
