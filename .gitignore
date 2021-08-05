@@ -129,4 +129,5 @@ data
 data1
 mnist
 *.pth
+*.json
 
