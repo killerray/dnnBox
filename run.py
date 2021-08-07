@@ -10,6 +10,7 @@ from torchvision.transforms import transforms
 from models import Rnn, AlexNet, LeNet, CNNLSTM, AttBiLSTM
 from train import train_loop, test_loop
 from dataset.CustomDataset import CustomDataset
+from dataset.PcapDataset import PcapDataset
 
 # 定义超参数
 batch_size = 64
@@ -143,10 +144,47 @@ def cnnlstm_custom_train():
     print("Saved PyTorch Model State to cnn_lstm.pth")
 
 
+def cnnlstm_pcap_train():
+    train_pcap_dataset = PcapDataset("pcapdata\\train", (3, 40 * 40),
+                                     (3, 1, 40, 40), "dstRaw", 7, slice(4, 7))
+    print("train sample:")
+    train_pcap_dataset.stat_sample_num()
+
+    test_pcap_dataset = PcapDataset("pcapdata\\test", (3, 40 * 40),
+                                    (3, 1, 40, 40), "dstRaw", 7, slice(4, 7))
+    print("test sample:")
+    test_pcap_dataset.stat_sample_num()
+
+    train_pcap_loader = DataLoader(train_pcap_dataset,
+                                   batch_size=batch_size,
+                                   shuffle=True)
+    test_pcap_loader = DataLoader(test_pcap_dataset,
+                                  batch_size=batch_size,
+                                  shuffle=False)
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print("Using {} device".format(device))
+
+    model = CNNLSTM(2).to(device)
+    loss_fn = nn.CrossEntropyLoss()
+    # optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+
+    for t in range(num_epoches):
+        print(f"Epoch {t + 1}\n-------------------------------")
+        train_loop(train_pcap_loader, model, loss_fn, optimizer, 3)
+        test_loop(test_pcap_loader, model, loss_fn, 3)
+        print("Done!")
+    # Save Models
+    torch.save(model.state_dict(), "cnn_lstm_pcap.pth")
+    print("Saved PyTorch Model State to cnn_lstm_pcap.pth")
+
+
 if __name__ == "__main__":
     # lstm_mnist_train()
     # alexnet_mnist_train()
     # LeNet_mnist_train()
     # cnnlstm_custom_train()
     # cnnlstm_mnist_train()
-    AttBilstm_mnist_train()
+    # AttBilstm_mnist_train()
+    cnnlstm_pcap_train()

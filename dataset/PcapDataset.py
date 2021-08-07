@@ -38,7 +38,7 @@ class PcapDataset(Dataset):
 
     def _create_sample_list(self) -> List[Dict]:
         res_list = list()
-        path_list = glob.glob("%s/*.json" % self.sample_dir)
+        path_list = glob.glob("%s\\*.json" % self.sample_dir)
         for filepath in path_list:
             with open(filepath, 'r') as f:
                 json_body = json.load(f)
@@ -55,6 +55,15 @@ class PcapDataset(Dataset):
             return False
         else:
             return True
+
+    def stat_sample_num(self):
+        sample_num_dict = dict()
+        for session in self._sample_list:
+            if session['pcapFileName'] in sample_num_dict:
+                sample_num_dict[session['pcapFileName']] += 1
+            else:
+                sample_num_dict[session['pcapFileName']] = 1
+        print(sample_num_dict)
 
     def target_transform(self, session):
         label_num_mapping = {"neg": 0, "pos": 1}
@@ -97,7 +106,8 @@ class PcapDataset(Dataset):
 
 if __name__ == "__main__":
     pcapDataset = PcapDataset("./", (3, 40 * 40), (3, 1, 40, 40), "Raw", 9,
-                              slice(0, 3))
+                              slice(6, 9))
     data, label = pcapDataset.__getitem__(0)
+    print("sample num", pcapDataset.__len__())
 
     print(label)

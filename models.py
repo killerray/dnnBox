@@ -180,11 +180,36 @@ class LeNetVariant(nn.Module):
         return x
 
 
+class CustomCNN(nn.Module):
+    def __init__(self):
+        super(CustomCNN, self).__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(1, 16, kernel_size=(3, 3), stride=(1, 1)),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(2, 2),
+            nn.Conv2d(16, 32, kernel_size=(2, 2), stride=(1, 1)),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(2, 2),
+            nn.Conv2d(32, 64, kernel_size=(2, 2), stride=(1, 1)),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(2, 2),
+        )
+        self.classifier = nn.Sequential(nn.Linear(64 * 4 * 4, 512),
+                                        nn.Linear(512, 256))
+
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(-1, 64 * 4 * 4)
+        x = self.classifier(x)
+        return x
+
+
 class CNNLSTM(nn.Module):
     def __init__(self, num_classes=2):
         super(CNNLSTM, self).__init__()
-        self.cnn = LeNetVariant()
-        self.lstm = nn.LSTM(input_size=84, hidden_size=128, num_layers=2,
+        # self.cnn = LeNetVariant()
+        self.cnn = CustomCNN()
+        self.lstm = nn.LSTM(input_size=256, hidden_size=128, num_layers=2,
                             batch_first=True)
         self.fc1 = nn.Linear(128, num_classes)
 
