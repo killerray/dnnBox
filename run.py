@@ -15,7 +15,7 @@ from optuna.trial import TrialState
 # 定义超参数
 batch_size = 64
 learning_rate = 1e-3
-num_epoches = 5
+num_epoches = 3
 
 train_dataset = datasets.MNIST(
     root='./mnist', train=True, transform=transforms.ToTensor(), download=True)
@@ -33,6 +33,7 @@ def LeNet_mnist_train(trial):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = LeNet(num_classes=10).to(device)
     loss_fn = nn.CrossEntropyLoss()
+    # 优化器集合
     optimizer = trial.suggest_categorical('optimizer',
                                           [torch.optim.SGD,
                                            torch.optim.RMSprop,
@@ -42,6 +43,7 @@ def LeNet_mnist_train(trial):
     for t in range(num_epoches):
         print(f"Epoch {t + 1}\n-------------------------------")
         train_loop(train_loader, model, loss_fn, optimizer)
+        # 需要将验证集上的accuray作为返回值传出
         test_accuracy = test_loop(test_loader, model, loss_fn)
         print("Done!")
         # Save Models
@@ -53,9 +55,11 @@ def LeNet_mnist_train(trial):
 if __name__ == "__main__":
     sampler = optuna.samplers.TPESampler()
     study = optuna.create_study(sampler=sampler, direction='maximize')
-    study.optimize(func=LeNet_mnist_train, n_trials=20)
-    pruned_trials = study.get_trials(deepcopy=False, states=tuple([TrialState.PRUNED]))
-    complete_trials = study.get_trials(deepcopy=False, states=tuple([TrialState.COMPLETE]))
+    study.optimize(func=LeNet_mnist_train, n_trials=3)
+    pruned_trials = study.get_trials(deepcopy=False,
+                                     states=tuple([TrialState.PRUNED]))
+    complete_trials = study.get_trials(deepcopy=False,
+                                       states=tuple([TrialState.COMPLETE]))
 
     print("Study statistics: ")
     print("  Number of finished trials: ", len(study.trials))
